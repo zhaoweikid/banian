@@ -44,6 +44,7 @@ CREATE TABLE plan_ref (
 
 CREATE TABLE items (
 	id bigint(20) not null primary key,
+	parent bigint(20) not null default 0,
 	title varchar(256) not null,
 	content varchar(4096),
 	attach varchar(2048),
