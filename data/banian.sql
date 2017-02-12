@@ -19,13 +19,6 @@ CREATE TABLE team (
 	uptime int(4) unsigned not null
 );
 
-CREATE TABLE project (
-	id bigint(20) not null primary key,
-	name varchar(256) not null,
-	creatid bigint(20) not null comment '创建人id',
-	ctime int(4) unsigned not null,
-	uptime int(4) unsigned not null,
-);
 
 CREATE TABLE plan (
 	id bigint(20) not null primary key,
@@ -39,6 +32,14 @@ CREATE TABLE plan_ref (
 	id bigint(20) not null primary key,
 	planid bigint(20) not null,
 	refid bigint(20) not null
+);
+
+CREATE TABLE project (
+	id bigint(20) not null primary key,
+	name varchar(256) not null,
+	creatid bigint(20) not null comment '创建人id',
+	ctime int(4) unsigned not null,
+	uptime int(4) unsigned not null,
 );
 
 
@@ -55,11 +56,12 @@ CREATE TABLE items (
 	uptime int(4) unsigned not null
 );
 
-CREATE TABLE comments (
+CREATE TABLE attachs (
 	id bigint(20) not null primary key,
 	itemid bigint(20) not null,
 	creatid bigint(20) not null,
-	content varchar(2048),
+	attach_type smallint not null comment '',
+	content varchar(4096),
 	ctime int(4) unsigned not null,
 	uptime int(4) unsigned not null
 );
