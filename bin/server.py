@@ -3,9 +3,9 @@
 import os
 import sys
 HOME = os.path.dirname(os.path.abspath(__file__))
-#sys.path.append(os.path.join(os.path.dirname(HOME), 'conf'))
-import zbase
-from zbase.base import logger,loader
+sys.path.append(os.path.join(os.path.dirname(HOME), 'conf'))
+
+from zbase3.base import logger,loader
 if __name__ == '__main__':
     loader.loadconf_argv(HOME)
 else:
@@ -20,15 +20,15 @@ if config.LOGFILE:
 else:
     log = logger.install('stdout')
 
-from zbase.base import dbpool
-from zbase.web import core
-from zbase.web import runner
+from zbase3.base import dbpool
+from zbase3.web import core
+from zbase3.web import runner
 
 # 导入数据库
-dbpool.install(config.DATABASE)
+#dbpool.install(config.DATABASE)
 
 # 导入WEB URLS
-config.URLS = urls.urls
+config.URLS = urls
 
 app = core.WebApplication(config)
 
