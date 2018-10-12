@@ -13,13 +13,6 @@ log = logging.getLogger()
 
 # GET:query POST:create PUT:update DELETE:delete
 
-def create_password(passwd, salt=None):
-    if salt is None:
-        salt = random.randint(1, 1000000)
-    saltstr = '%06d' % salt 
-    return 'sha1$%s$%s' % (salt, hashlib.sha1(passwd+saltstr).hexdigest())
-
-
 def record_long2str(record):
     if isinstance(record, list):
         for row in record:
@@ -75,7 +68,8 @@ class DataTpl (BaseHandler):
                     sql = conn.select_sql(self.table, fields=self.select_fields)
                     log.debug('select:%s', sql)
                     p =  conn.select_page(sql, pagecur, pagesize)
-                    ret = {'page':p.page, 'pagesize':pagesize, 'pagecount':p.pages, 'data':record_long2str(p.pagedata.data)}
+                    ret = {'page':p.page, 'pagesize':pagesize, 'pagecount':p.pages, 
+                           'data':record_long2str(p.pagedata.data)}
                     self.succ(ret)
         except Exception as e:
             log.error(traceback.format_exc())

@@ -8,7 +8,7 @@ HOME = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
 URLS = None
 
 # 静态路径配置
-STATICS = {'/static/':'/static/'}
+STATICS = {'/v1/static/':'/'}
 
 # 模板配置
 TEMPLATE = {
@@ -28,7 +28,7 @@ MIDDLEWARE = (
 )
 
 # WEB根路径
-DOCUMENT_ROOT = HOME
+DOCUMENT_ROOT = os.path.join(HOME, 'static')
 
 # 页面编码
 CHARSET = 'UTF-8'
@@ -37,4 +37,11 @@ CHARSET = 'UTF-8'
 # store:DiskSessionStore, expire:x, path:/tmp
 # store:RedisSessionStore, expire:x, 'addr':[(ip,port)]
 # store:MemcachedSessionStore, expire:x, addr:[(ip,port)]
-SESSION = {'store':'DiskSessionStore', 'expire':30, 'path':'/tmp'}
+#SESSION = {'store':'DiskSessionStore', 'expire':30, 'path':'/tmp'}
+
+SESSION = { 
+    'type':'SessionRedis', 
+    'server':[{'addr':('127.0.0.1', 6379), 'timeout':1000}], 
+    'expire':3600,
+}
+
