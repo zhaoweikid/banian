@@ -4,6 +4,7 @@ DROP DATABASE banian;
 
 CREATE DATABASE banian;
 USE banian;
+SET NAMES 'utf8';
 
 CREATE TABLE profile (
 	userid bigint(20) not null primary key,
@@ -13,7 +14,7 @@ CREATE TABLE profile (
 
 CREATE TABLE role (
 	id bigint(20) not null primary key,
-	name varchar(256) not null unique COMMENT '角色名',
+	name varchar(128) not null unique COMMENT '角色名',
 	perm varchar(256) COMMENT '权限'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '用户角色';
 
@@ -38,6 +39,8 @@ insert into role(id,name,perm) values (311,'运营','');
 insert into role(id,name,perm) values (401,'设计总监','');
 insert into role(id,name,perm) values (402,'设计经理','');
 insert into role(id,name,perm) values (411,'设计师','');
+insert into role(id,name,perm) values (500,'销售VP','');
+insert into role(id,name,perm) values (501,'销售总监','');
 
 CREATE TABLE team (
 	id bigint(20) not null primary key,

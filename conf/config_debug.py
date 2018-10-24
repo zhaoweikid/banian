@@ -10,10 +10,6 @@ HOST = '0.0.0.0'
 # 服务端口
 PORT = 6200
 
-# 调试模式: True/False
-# 生产环境必须为False
-DEBUG = True
-
 # 日志文件配置
 LOGFILE = 'stdout'
 
@@ -24,7 +20,7 @@ DATABASE = {
         'db': 'banian',
         'host': '127.0.0.1',
         'port': 3306,
-        'user': 'root',
+        'user': 'zhaowei',
         'passwd': '123456',
         'charset': 'utf8',
         'conn': 16,

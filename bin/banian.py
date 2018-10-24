@@ -42,6 +42,7 @@ class DataTpl (BaseHandler):
     dbname = 'banian'
     table = ''
     select_fields = '*'
+    max_pagesize = 20
 
     GET_fields = []
     POST_fields = []
@@ -64,7 +65,9 @@ class DataTpl (BaseHandler):
                 else:
                     data = self.req.input()
                     pagecur = int(data.get('page', 1))
-                    pagesize = int(data.get('pagesize', 20))
+                    pagesize = int(data.get('pagesize', self.max_pagesize))
+                    if pagesize > self.max_pagesize:
+                        pagesize = self.max_pagesize
                     sql = conn.select_sql(self.table, fields=self.select_fields)
                     log.debug('select:%s', sql)
                     p =  conn.select_page(sql, pagecur, pagesize)
@@ -145,6 +148,7 @@ class Role (NoDeleteMixin, DataTpl):
 class Team (NoDeleteMixin, DataTpl):
     table = 'team'
     select_fields = 'id,ownerid,name,level,parent,tmtype,ctime,utime'
+    max_pagesize = 1000
 
 
 class TeamMember (NoDeleteMixin, DataTpl):

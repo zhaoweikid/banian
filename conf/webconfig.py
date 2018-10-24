@@ -2,19 +2,23 @@
 
 import os
 import sys
-HOME = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'bin')
+HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# 调试模式: True/False
+# 生产环境必须为False
+DEBUG = True
 
 # URLS配置
 URLS = None
 
 # 静态路径配置
-STATICS = {'/v1/static/':'/'}
+STATICS = {'/s1/':'/default/'}
 
 # 模板配置
 TEMPLATE = {
-    'cache': False,
+    'cache': not DEBUG,
     'path': 'templates',
-    'tmp': os.path.join(HOME, '../tmp'),
+    'tmp': os.path.join(HOME, 'tmp'),
 }
 
 # APP就是一个子目录
