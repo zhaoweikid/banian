@@ -3,7 +3,8 @@
 import banian
 
 urls = (
-    ('^/v1/ping$', 'banian.Index'),
+    ('^/$', 'banian.Index'),
+    ('^/v1/ping$', 'banian.Ping'),
     ('^/v1/role(?:/([0-9]+))?$', 'banian.Role'),
     ('^/v1/team(?:/([0-9]+))?$', 'banian.Team'),
     ('^/v1/item(?:/([0-9]+))?$', 'banian.Items'),

@@ -6,15 +6,24 @@ CREATE DATABASE banian;
 USE banian;
 SET NAMES 'utf8';
 
+CREATE TABLE orga (
+	id bigint(20) not null primary key,
+	name varchar(128) not null unique COMMENT '组织名字',
+	ctime int(11) unsigned not null,
+	utime int(11) unsigned not null
+);
+
 CREATE TABLE profile (
 	userid bigint(20) not null primary key,
 	roleid bigint(20) not null COMMENT '角色',
+	orgid bigint(20) not null COMMENT '组织id',
 	username varchar(128) not null unique COMMENT '用户名'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '用户信息';
 
 CREATE TABLE role (
 	id bigint(20) not null primary key,
 	name varchar(128) not null unique COMMENT '角色名',
+	orgid bigint(20) not null COMMENT '组织id',
 	perm varchar(256) COMMENT '权限'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '用户角色';
 
@@ -44,6 +53,7 @@ insert into role(id,name,perm) values (501,'销售总监','');
 
 CREATE TABLE team (
 	id bigint(20) not null primary key,
+	orgid bigint(20) not null COMMENT '组织id',
 	ownerid bigint(20) not null COMMENT '团队负责人',
 	name varchar(128) not null unique COMMENT '团队名称',
 	level tinyint not null default 1 COMMENT '分级',
@@ -56,6 +66,7 @@ CREATE TABLE team (
 
 CREATE TABLE team_member (
 	id bigint(20) not null primary key,
+	orgid bigint(20) not null COMMENT '组织id',
 	userid bigint(20) not null COMMENT '用户id',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null,
@@ -64,6 +75,7 @@ CREATE TABLE team_member (
 
 CREATE TABLE tag (
 	id bigint(20) not null primary key,
+	orgid bigint(20) not null COMMENT '组织id',
 	name varchar(128) not null COMMENT '类别名称',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null
@@ -72,6 +84,7 @@ CREATE TABLE tag (
 
 CREATE TABLE product (
 	id bigint(20) not null primary key,
+	orgid bigint(20) not null COMMENT '组织id',
 	title varchar(256) not null COMMENT '名称',
 	content varchar(1024) not null COMMENT '描述',
 	creatid bigint(20) not null COMMENT '创建人',
@@ -86,6 +99,7 @@ CREATE TABLE product (
 
 CREATE TABLE plan (
 	id bigint(20) not null primary key,
+	orgid bigint(20) not null COMMENT '组织id',
 	creatid bigint(20) not null COMMENT '创建人',
 	tag1 bigint(20) not null COMMENT '标签1',
 	tag2 bigint(20) not null COMMENT '标签2',
@@ -110,6 +124,7 @@ CREATE TABLE plan (
 
 CREATE TABLE items (
 	id bigint(20) not null primary key,
+	orgid bigint(20) not null COMMENT '组织id',
 	parentid bigint(20) not null default 0 COMMENT '父级任务，任务拆分时可能有多级',
 	planid bigint(20) not null default 0 COMMENT '迭代id',
 	topid bigint(20) not null default 0 COMMENT '第1级任务id',

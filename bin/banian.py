@@ -197,5 +197,5 @@ class Index (BaseHandler):
         log.info('ping')
         self.succ({'time':str(datetime.datetime.now())[:19], 'content':'pong'})
 
-
+Ping = Index
 
