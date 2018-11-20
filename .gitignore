@@ -3,3 +3,4 @@
 *.pyd
 *.o
 __pycache__
+*.swp
