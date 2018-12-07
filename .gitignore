@@ -4,3 +4,4 @@
 *.o
 __pycache__
 *.swp
+node_modules
