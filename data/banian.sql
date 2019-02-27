@@ -17,7 +17,9 @@ CREATE TABLE profile (
 	userid bigint(20) not null primary key,
 	roleid bigint(20) not null COMMENT '角色',
 	orgid bigint(20) not null COMMENT '组织id',
-	username varchar(128) not null unique COMMENT '用户名'
+	username varchar(128) not null unique COMMENT '用户名',
+	ctime int(11) unsigned not null,
+	utime int(11) unsigned not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '用户信息';
 
 CREATE TABLE role (
@@ -66,7 +68,7 @@ CREATE TABLE team (
 
 CREATE TABLE team_member (
 	id bigint(20) not null primary key,
-	orgid bigint(20) not null COMMENT '组织id',
+	teamid bigint(20) not null COMMENT '团队id',
 	userid bigint(20) not null COMMENT '用户id',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null,
@@ -77,6 +79,7 @@ CREATE TABLE tag (
 	id bigint(20) not null primary key,
 	orgid bigint(20) not null COMMENT '组织id',
 	name varchar(128) not null COMMENT '类别名称',
+	memo varchar(256) not null COMMENT '描述',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '项目类别';	
