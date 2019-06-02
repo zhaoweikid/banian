@@ -3,12 +3,12 @@
 import banian
 
 urls = (
-    ('^/$', 'banian.Index'),
-    ('^/v1/ping$', 'banian.Ping'),
-    ('^/v1/orga(?:/([0-9]+))?$', 'banian.Orga'),
-    ('^/v1/role(?:/([0-9]+))?$', 'banian.Role'),
-    ('^/v1/profile(?:/([0-9]+))?$', 'banian.Profile'),
-    ('^/v1/team(?:/([0-9]+))?$', 'banian.Team'),
-    ('^/v1/item(?:/([0-9]+))?$', 'banian.Items'),
-    ('^/v1/attach(?:/([0-9]+))?$', 'banian.Attachs'),
+    ('^/bn/$', 'banian.Index'),
+    ('^/bn/v1/ping$', 'banian.Ping'),
+    ('^/bn/v1/orga/(create|query|modify)?$', 'banian.Orga'),
+    ('^/bn/v1/role/(create|query|modify)?$', 'banian.Role'),
+    ('^/bn/v1/profile/(create|query|modify)?$', 'banian.Profile'),
+    ('^/bn/v1/team/(create|query|modify)?$', 'banian.Team'),
+    ('^/bn/v1/item/(create|query|modify)?$', 'banian.Items'),
+    ('^/bn/v1/attach/(create|query|modify)?$', 'banian.Attachs'),
 )

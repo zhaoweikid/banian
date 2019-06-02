@@ -11,7 +11,7 @@ CREATE TABLE orga (
 	name varchar(128) not null unique COMMENT '组织名字',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '组织';
 
 CREATE TABLE profile (
 	userid bigint(20) not null primary key,
@@ -25,42 +25,34 @@ CREATE TABLE profile (
 CREATE TABLE role (
 	id bigint(20) not null primary key,
 	name varchar(128) not null unique COMMENT '角色名',
+	info varchar(128) not null unique COMMENT '角色描述',
 	orgid bigint(20) not null COMMENT '组织id',
 	perm varchar(256) COMMENT '权限'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '用户角色';
 
-insert into role(id,name,perm) values (100,'研发VP','');
-insert into role(id,name,perm) values (101,'研发总监','');
-insert into role(id,name,perm) values (102,'研发经理','');
-insert into role(id,name,perm) values (103,'测试经理','');
-insert into role(id,name,perm) values (104,'运维经理','');
-insert into role(id,name,perm) values (113,'后台开发','');
-insert into role(id,name,perm) values (114,'前端开发','');
-insert into role(id,name,perm) values (115,'Android开发','');
-insert into role(id,name,perm) values (116,'iOS开发','');
-insert into role(id,name,perm) values (117,'测试','');
-insert into role(id,name,perm) values (118,'运维','');
-insert into role(id,name,perm) values (200,'产品VP','');
-insert into role(id,name,perm) values (201,'产品总监','');
-insert into role(id,name,perm) values (202,'产品经理','');
-insert into role(id,name,perm) values (300,'运营VP','');
-insert into role(id,name,perm) values (301,'运营总监','');
-insert into role(id,name,perm) values (302,'运营经理','');
-insert into role(id,name,perm) values (311,'运营','');
-insert into role(id,name,perm) values (401,'设计总监','');
-insert into role(id,name,perm) values (402,'设计经理','');
-insert into role(id,name,perm) values (411,'设计师','');
-insert into role(id,name,perm) values (500,'销售VP','');
-insert into role(id,name,perm) values (501,'销售总监','');
+insert into role(id,name,orgid,info) values (100,'VP',0,'副总裁');
+insert into role(id,name,orgid,info) values (101,'TM',0,'总监');
+insert into role(id,name,orgid,info) values (102,'TL',0,'技术经理');
+insert into role(id,name,orgid,info) values (103,'PM',0,'产品经理');
+insert into role(id,name,orgid,info) values (104,'DEV',0,'开发');
+insert into role(id,name,orgid,info) values (105,'ARCH',0,'架构师');
+insert into role(id,name,orgid,info) values (106,'OP',0,'运维');
+insert into role(id,name,orgid,info) values (107,'DBA',0,'数据库管理员');
+insert into role(id,name,orgid,info) values (108,'QA',0,'测试');
+insert into role(id,name,orgid,info) values (109,'UI',0,'设计师');
+insert into role(id,name,orgid,info) values (200,'Android',0,'安卓开发');
+insert into role(id,name,orgid,info) values (201,'iOS',0,'苹果开发');
+insert into role(id,name,orgid,info) values (202,'Server',0,'服务端开发');
+insert into role(id,name,orgid,info) values (203,'Web',0,'前端开发');
+
 
 CREATE TABLE team (
 	id bigint(20) not null primary key,
 	orgid bigint(20) not null COMMENT '组织id',
 	ownerid bigint(20) not null COMMENT '团队负责人',
 	name varchar(128) not null unique COMMENT '团队名称',
-	level tinyint not null default 1 COMMENT '分级',
 	parent bigint(20) not null default 0 COMMENT '父级团队',
-	tmtype tinyint not null default 1 COMMENT '团队类型 1.管理团队 2.项目虚拟团队',
+	tmtype tinyint not null default 1 COMMENT '团队类型 1.专业团队 2.项目团队',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null
 	/*key `ownerid_idx` (ownerid)*/
@@ -79,7 +71,7 @@ CREATE TABLE tag (
 	id bigint(20) not null primary key,
 	orgid bigint(20) not null COMMENT '组织id',
 	name varchar(128) not null COMMENT '类别名称',
-	memo varchar(256) not null COMMENT '描述',
+	info varchar(256) not null COMMENT '描述',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '项目类别';	
@@ -91,14 +83,14 @@ CREATE TABLE product (
 	title varchar(256) not null COMMENT '名称',
 	content varchar(1024) not null COMMENT '描述',
 	creatid bigint(20) not null COMMENT '创建人',
-	pjmid bigint(20) not null COMMENT '负责人',
+	pmid bigint(20) not null COMMENT '负责人',
 	tag1 bigint(20) not null COMMENT '标签1',
 	tag2 bigint(20) not null COMMENT '标签2',
 	tag3 bigint(20) not null COMMENT '标签3',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null,
 	key (creatid)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '项目';	
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '产品';	
 
 CREATE TABLE plan (
 	id bigint(20) not null primary key,
@@ -107,10 +99,10 @@ CREATE TABLE plan (
 	tag1 bigint(20) not null COMMENT '标签1',
 	tag2 bigint(20) not null COMMENT '标签2',
 	tag3 bigint(20) not null COMMENT '标签3',
-	pjmid bigint(20) not null COMMENT '项目负责人',
+	pmid bigint(20) not null COMMENT '项目负责人',
 	title varchar(128) not null COMMENT '迭代名称',
 	content varchar(1024) not null COMMENT '迭代描述',
-	state tinyint not null default 1 COMMENT '状态 1.创建 2.已开始 3.已暂停 4.已完成',
+	state tinyint not null default 1 COMMENT '状态 1.创建 2.已确认 3.已开始 4.已暂停 5.已完成 5.取消',
 	memo varchar(512) COMMENT '扩展信息',
 	tstart int(11) unsigned  NOT NULL default 0 COMMENT '计划开始时间',
 	tend int(11) unsigned  NOT NULL default 0 COMMENT '计划结束时间',
@@ -118,11 +110,11 @@ CREATE TABLE plan (
 	tend_real int(11) unsigned  NOT NULL default 0 COMMENT '真实结束时间',
 	point smallint not null default 0 COMMENT '迭代完成需要点数',
 	rate smallint not null default 0 COMMENT '迭代完成百分比，100为完成，10表示10%',
-	closed tinyint not null default 0 COMMENT '是否关闭',
+	enabled tinyint not null default 1 COMMENT '是否可用',
 	ctime int(11) unsigned NOT NULL DEFAULT 0 COMMENT '创建时间',
 	utime int(11) unsigned not null COMMENT '更新时间',
 	key (creatid),
-	key (pjmid)
+	key (pmid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '迭代计划';
 
 CREATE TABLE items (
@@ -132,6 +124,7 @@ CREATE TABLE items (
 	planid bigint(20) not null default 0 COMMENT '迭代id',
 	topid bigint(20) not null default 0 COMMENT '第1级任务id',
 	prdid bigint(20) not null default 0 COMMENT '产品id',
+	itemtype smallint not null default 0 COMMENT '任务类型 1.开发任务 2.产品需求',
 	tag1 bigint(20) not null COMMENT '标签1',
 	tag2 bigint(20) not null COMMENT '标签2',
 	tag3 bigint(20) not null COMMENT '标签3',
@@ -142,7 +135,7 @@ CREATE TABLE items (
 	ownerid bigint(20) not null COMMENT '负责人，即实际做的人',
 	point smallint not null default 0 COMMENT '任务完成需要点数',
 	rate smallint not null default 0 COMMENT '任务完成百分比，100为完成，10表示10%',
-	state smallint not null default 1 COMMENT '状态 1.创建 2.已开始 3.已暂停 3.已完成',
+	state smallint not null default 1 COMMENT '状态 1.创建 2.已确认 3.已开始 4.已暂停 5.已完成',
 	closed tinyint not null default 0 COMMENT '是否关闭',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null COMMENT '更新时间',

@@ -30,3 +30,10 @@ DATABASE = {
     },
 }
 
+try:
+    import dbconfig
+    DATABASE.update(config.DATABASE)
+except:
+    pass
+
+
