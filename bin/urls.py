@@ -3,7 +3,6 @@
 import banian
 
 urls = (
-    ('^/bn/$', 'banian.Index'),
     ('^/bn/v1/ping$', 'banian.Ping'),
     ('^/bn/v1/orga/(create|query|modify)?$', 'banian.Orga'),
     ('^/bn/v1/role/(create|query|modify)?$', 'banian.Role'),

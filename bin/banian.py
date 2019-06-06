@@ -4,20 +4,29 @@ import time, datetime
 import traceback
 from zbase3.web import template, validator, advance
 from zbase3.web.validator import *
-from zbase3.base.dbpool import get_connection
+from zbase3.base.dbpool import get_connection, DBFunc
 from zbase3.utils import createid
 from defines import *
+import config
 import logging
 
 log = logging.getLogger()
 
 
 def record_change(record):
+    def _(row):
+        for k in ['id','userid','orgid']:
+            if k in row:
+                row[k] = str(row[k])
+        if 'password' in row:
+            row.pop('password')
+
     if isinstance(record, list):
         for row in record:
-            row['id'] = str(row['id'])
+            _(row)
     elif isinstance(record, dict):
-        record['id'] = str(record['id'])
+        _(row)
+
     return record
 
 class BaseHandler (advance.APIHandler):
@@ -35,6 +44,7 @@ class BaseHandler (advance.APIHandler):
 
 
 class BaseObject (BaseHandler):
+    session_conf = config.SESSION
     dbname = 'banian'
     table = ''
     select_fields = '*'
@@ -43,9 +53,6 @@ class BaseObject (BaseHandler):
     def error(self, data):
         self.fail(ERR_PARAM)
     
-    @with_validator([
-        F('id', T_INT),
-    ])
     def query(self):
         xid = self.data.get('id')
         log.debug('query: %s', xid)
@@ -53,6 +60,9 @@ class BaseObject (BaseHandler):
             xid = int(xid)
             self.query_one(xid)
         else:
+            if not self.ses.get('isadmin'):
+                self.fail(ERR_PERM)
+                return
             self.query_all()
    
 
@@ -61,10 +71,20 @@ class BaseObject (BaseHandler):
         pagesize = int(self.data.get('pagesize', self.max_pagesize))
         if pagesize > self.max_pagesize:
             pagesize = self.max_pagesize
+        where = {}
+
+        for k,v in self.data.items():
+            if k in ['page', 'pagesize']:
+                continue
+
+            if isinstance(v, (list,tuple)):
+                where[k] = (self.validaor.get(k).op, v)
+            else:
+                where[k] = v
 
         try:
             with get_connection(self.dbname) as conn:
-                sql = conn.select_sql(self.table, fields=self.select_fields, other="order by id desc")
+                sql = conn.select_sql(self.table, where, fields=self.select_fields, other="order by id desc")
                 log.debug('select:%s', sql)
                 p =  conn.select_page(sql, pagecur, pagesize)
                 ret = {'page':p.page, 'pagesize':pagesize, 'pagenum':p.pages, 
@@ -94,31 +114,26 @@ class BaseObject (BaseHandler):
             if not self.data:
                 self.fail(ERR_PARAM)
                 return
+
+            self.data['ctime'] = DBFunc('UNIX_TIMESTAMP(now())')
+            self.data['utime'] = DBFunc('UNIX_TIMESTAMP(now())')
             with get_connection(self.dbname) as conn:
                 self.data['id'] = createid.new_id64(conn=conn)
                 conn.insert(self.table, self.data)
-
-                self.succ({'id':str(self.data['id'])})
+                ret = conn.select(self.table, {'id':self.data['id']}, self.select_fields)
+                record_change(ret)
+                self.succ(ret)
         except Exception as e:
             log.error(traceback.format_exc())
             self.fail(ERR, str(e))
 
-    def modify(self, xid, data):
-        xid = int(xid)
+    def modify(self):
+        xid = int(self.data.get('id'))
+        self.data.pop('id') 
         try:
-            if not xid:
-                self.fail(ERR_PARAM)
-                return
-
-            if not data:
-                self.fail(ERR_PARAM)
-                return
-
-            if 'id' in data:
-                data.pop('id')
-     
+            self.data['utime'] = DBFunc('UNIX_TIMESTAMP(now())')
             with get_connection(self.dbname) as conn:
-                conn.update(self.table, data, {'id':xid})
+                conn.update(self.table, self.data, {'id':xid})
                 ret = conn.select(self.table, {'id':xid}, self.select_fields)
                 self.succ(record_change(ret))
         except Exception as e:
@@ -143,11 +158,40 @@ class DeleteMixin:
 
 class Orga (BaseObject):
     table = 'orga'
-    select_fields = 'id,name,ctime,utime'
-    
-    session_nocheck = [
-        '/bn/v1/orga/query',
-    ]
+    select_fields = 'id,name,FROM_UNIXTIME(ctime) as ctime,FROM_UNIXTIME(utime) as utime'
+
+    @with_validator([
+        F('name', must=True),
+        F('userid'),
+    ])
+    def create(self):
+        if 'userid' in self.data and not self.ses.get('isadmin', 0):
+            log.debug('only admin can use userid')
+            self.fail(ERR_PERM)
+            return 
+        self.data['userid'] = self.ses.get('userid')
+        return BaseObject.create(self)
+
+
+    @with_validator([
+        F('id', T_INT, must=True),
+        F('name', must=True),
+        F('userid'),
+    ])
+    def modify(self):
+        if 'userid' in self.data and not self.ses.get('isadmin', 0):
+            log.debug('only admin can modify userid')
+            self.fail(ERR_PERM)
+            return 
+        return BaseObject.modify(self)
+ 
+    @with_validator([
+        F('id', T_INT),
+        F('name'),
+    ])
+    def query(self):
+        return BaseObject.query(self)
+ 
 
 class Role (BaseObject):
     table = 'role'
@@ -240,6 +284,9 @@ class Tag (BaseObject):
 
 
 class Index (BaseHandler):
+    session_nocheck = [
+        '/bn/v1/ping',
+    ]
     def GET(self):
         log.info('ping')
         self.succ({'time':str(datetime.datetime.now())[:19], 'content':'pong'})

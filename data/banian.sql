@@ -8,15 +8,16 @@ SET NAMES 'utf8';
 
 CREATE TABLE orga (
 	id bigint(20) not null primary key,
-	name varchar(128) not null unique COMMENT '组织名字',
+	name varchar(128) not null COMMENT '组织名字',
+	userid bigint(20) not null,
 	ctime int(11) unsigned not null,
-	utime int(11) unsigned not null
+	utime int(11) unsigned not null,
+	UNIQUE KEY `userid_name_uq` (`name`, `userid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '组织';
 
 CREATE TABLE profile (
 	userid bigint(20) not null primary key,
 	roleid bigint(20) not null COMMENT '角色',
-	orgid bigint(20) not null COMMENT '组织id',
 	username varchar(128) not null unique COMMENT '用户名',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null
