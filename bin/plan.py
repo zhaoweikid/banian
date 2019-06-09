@@ -22,7 +22,7 @@ class Plan (BaseObject):
         'FROM_UNIXTIME(ctime) as ctime,FROM_UNIXTIME(utime) as utime'
 
 
-     @with_validator([
+    @with_validator([
         F('orgid', T_INT),
         F('title', must=True),
         F('content'),

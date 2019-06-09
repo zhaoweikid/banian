@@ -25,7 +25,7 @@ def record_change(record):
         for row in record:
             _(row)
     elif isinstance(record, dict):
-        _(row)
+        _(record)
 
     return record
 
@@ -98,7 +98,7 @@ class BaseObject (BaseHandler):
     def query_one(self, xid):
         try:
             with get_connection(self.dbname) as conn:
-                ret = conn.select(self.table, {'id':int(xid)}, self.select_fields)
+                ret = conn.select_one(self.table, {'id':int(xid)}, self.select_fields)
                 if not ret:
                     self.fail(ERR_NODATA)
                     return
@@ -120,7 +120,7 @@ class BaseObject (BaseHandler):
             with get_connection(self.dbname) as conn:
                 self.data['id'] = createid.new_id64(conn=conn)
                 conn.insert(self.table, self.data)
-                ret = conn.select(self.table, {'id':self.data['id']}, self.select_fields)
+                ret = conn.select_one(self.table, {'id':self.data['id']}, self.select_fields)
                 record_change(ret)
                 self.succ(ret)
         except Exception as e:
