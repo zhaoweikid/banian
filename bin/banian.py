@@ -7,153 +7,11 @@ from zbase3.web.validator import *
 from zbase3.base.dbpool import get_connection, DBFunc
 from zbase3.utils import createid
 from defines import *
+from base import BaseHandler, BaseObject
 import config
 import logging
 
 log = logging.getLogger()
-
-
-def record_change(record):
-    def _(row):
-        for k in ['id','userid','orgid']:
-            if k in row:
-                row[k] = str(row[k])
-        if 'password' in row:
-            row.pop('password')
-
-    if isinstance(record, list):
-        for row in record:
-            _(row)
-    elif isinstance(record, dict):
-        _(row)
-
-    return record
-
-class BaseHandler (advance.APIHandler):
-    def fail(self, ret=-1, err='error', debug=''):
-        return advance.APIHandler.fail(self, ret, errstr[ret], debug)
-
-    def input(self):
-        x1 = self.req.input()
-        if x1:
-            return x1
-        x2 = self.req.inputjson()
-        if x2:
-            return x2
-        return {}
-
-
-class BaseObject (BaseHandler):
-    session_conf = config.SESSION
-    dbname = 'banian'
-    table = ''
-    select_fields = '*'
-    max_pagesize = 20
-
-    def error(self, data):
-        self.fail(ERR_PARAM)
-    
-    def query(self):
-        xid = self.data.get('id')
-        log.debug('query: %s', xid)
-        if xid:
-            xid = int(xid)
-            self.query_one(xid)
-        else:
-            if not self.ses.get('isadmin'):
-                self.fail(ERR_PERM)
-                return
-            self.query_all()
-   
-
-    def query_all(self):
-        pagecur = int(self.data.get('page', 1))
-        pagesize = int(self.data.get('pagesize', self.max_pagesize))
-        if pagesize > self.max_pagesize:
-            pagesize = self.max_pagesize
-        where = {}
-
-        for k,v in self.data.items():
-            if k in ['page', 'pagesize']:
-                continue
-
-            if isinstance(v, (list,tuple)):
-                where[k] = (self.validaor.get(k).op, v)
-            else:
-                where[k] = v
-
-        try:
-            with get_connection(self.dbname) as conn:
-                sql = conn.select_sql(self.table, where, fields=self.select_fields, other="order by id desc")
-                log.debug('select:%s', sql)
-                p =  conn.select_page(sql, pagecur, pagesize)
-                ret = {'page':p.page, 'pagesize':pagesize, 'pagenum':p.pages, 
-                       'data':record_change(p.pagedata.data)}
-                self.succ(ret)
-        except Exception as e:
-            log.error(traceback.format_exc())
-            self.fail(ERR, str(e))
-
-
-    def query_one(self, xid):
-        try:
-            with get_connection(self.dbname) as conn:
-                ret = conn.select(self.table, {'id':int(xid)}, self.select_fields)
-                if not ret:
-                    self.fail(ERR_NODATA)
-                    return
-                self.succ(record_change(ret))
-        except Exception as e:
-            log.error(traceback.format_exc())
-            self.fail(ERR, str(e))
-
-
-    def create(self):
-        try:
-            log.debug('post data:%s', self.data)
-            if not self.data:
-                self.fail(ERR_PARAM)
-                return
-
-            self.data['ctime'] = DBFunc('UNIX_TIMESTAMP(now())')
-            self.data['utime'] = DBFunc('UNIX_TIMESTAMP(now())')
-            with get_connection(self.dbname) as conn:
-                self.data['id'] = createid.new_id64(conn=conn)
-                conn.insert(self.table, self.data)
-                ret = conn.select(self.table, {'id':self.data['id']}, self.select_fields)
-                record_change(ret)
-                self.succ(ret)
-        except Exception as e:
-            log.error(traceback.format_exc())
-            self.fail(ERR, str(e))
-
-    def modify(self):
-        xid = int(self.data.get('id'))
-        self.data.pop('id') 
-        try:
-            self.data['utime'] = DBFunc('UNIX_TIMESTAMP(now())')
-            with get_connection(self.dbname) as conn:
-                conn.update(self.table, self.data, {'id':xid})
-                ret = conn.select(self.table, {'id':xid}, self.select_fields)
-                self.succ(record_change(ret))
-        except Exception as e:
-            log.error(traceback.format_exc())
-            self.fail(ERR, str(e))
-
-
-class DeleteMixin:
-    def delete(self, xid):
-        try:
-            if not xid:
-                log.info('must have xid')
-                self.fail(ERR_PARAM)
-                return
-            with get_connection(self.dbname) as conn:
-                conn.delete(self.table, {'id':int(xid)})
-                self.succ()
-        except Exception as e:
-            log.error(traceback.format_exc())
-            self.fail(ERR, str(e))
 
 
 class Orga (BaseObject):
@@ -192,46 +50,91 @@ class Orga (BaseObject):
     def query(self):
         return BaseObject.query(self)
  
+    def check_orgid(self):
+        # 创建必须有orgid
+        # 修改只有admin才可以改orgid
+        # 查询只有admin可以指定orgid
+        orgid = self.data.get('orgid')
+        isadmin = self.ses.get('isadmin', 0)
+
+        if not orgid and not isadmin:
+            log.debug('only admin can not use orgid')
+            self.fail(ERR_PERM)
+            return False
+        return True
+
 
 class Role (BaseObject):
     table = 'role'
-    select_fields = 'id,name'
+    select_fields = 'id,name,info,orgid,perm,FROM_UNIXTIME(ctime) as ctime,FROM_UNIXTIME(utime) as utime'
 
-class Profile (BaseHandler):
-    dbname = 'banian'
-    def GET(self):
-        retdata = {'username':'', 'org':{}, 'role':{}}
+    @with_validator([
+        F('name', must=True),
+        F('info'),
+        F('orgid', T_INT),
+        F('perm'),
+    ])
+    def create(self):
+        return BaseObject.create(self)
 
-        try:
-            userid = self.ses['userid']
-            with get_connection(self.dbname) as conn:
-                #ret = conn.query_one('profile', where={'userid':userid})
-                ret = conn.query_one('select p.username as username,o.id as orgid,o.name as orgname,r.id as roleid,' \
-                    'r.name as rulename, r.perm as perm'\
-                    'from profile p,orga o,role r '\
-                    'where p.userid=%d and o.id=p.orgid and r.id=p.roleid')
-                if ret:
-                    retdata['username'] = ret['username']
+    @with_validator([
+        F('id', T_INT, must=True),
+        F('name'),
+        F('info'),
+        F('orgid', T_INT),
+    ])
+    def modify(self):
+        return BaseObject.modify(self)
+ 
+    @with_validator([
+        F('id', T_INT),
+        F('name'),
+        F('orgid', T_INT),
+    ])
+    def query(self):
+        return BaseObject.query(self)
+ 
 
-                    org = retdata['org']
-                    org['id'] = ret['orgid']
-                    org['name'] = ret['orgname']
-
-                    role = retdata['role']
-                    role['id'] = ret['roleid']
-                    role['name'] = ret['rolename']
-                    role['perm'] = ret['perm']
-
-                return self.succ(retdata)
-        except:
-            log.error(traceback.format_exc())
-            self.fail(ERR, str(e))
 
 
 class Team (BaseObject):
     table = 'team'
     select_fields = 'id,ownerid,name,level,parent,tmtype,ctime,utime'
     max_pagesize = 1000
+
+
+    @with_validator([
+        F('orgid', T_INT),
+        F('ownerid', T_INT),
+        F('name'),
+        F('parent', T_INT, default=0),
+        F('tmtype', T_INT, default=1),
+    ])
+    def create(self):
+        return BaseObject.create(self)
+
+    @with_validator([
+        F('id', T_INT, must=True),
+        F('ownerid', T_INT),
+        F('name'),
+        F('parent', T_INT, default=0),
+        F('tmtype', T_INT, default=1),
+    ])
+    def modify(self):
+        return BaseObject.modify(self)
+ 
+    @with_validator([
+        F('id', T_INT, must=True),
+        F('ownerid', T_INT),
+        F('name'),
+        F('parent', T_INT),
+        F('tmtype', T_INT),
+    ])
+    def query(self):
+        return BaseObject.query(self)
+ 
+    def add_member(self):
+        member = TeamMember()
 
     def member(self, teamid):
         try:
@@ -244,43 +147,78 @@ class Team (BaseObject):
             log.error(traceback.format_exc())
             self.fail(ERR, str(e))
 
+class Tag (BaseObject):
+    table = 'tag'
+    select_fields = 'id,name,info,orgid,FROM_UNIXTIME(ctime) as ctime,FROM_UNIXTIME(utime) as utime'
 
+    @with_validator([
+        F('name', must=True),
+        F('info'),
+        F('orgid', T_INT),
+    ])
+    def create(self):
+        return BaseObject.create(self)
 
-class Plan (BaseObject):
-    def __init__(self):
-        self.table = 'plan'
-        self.ret_fields = []
-
-    def add_user(self, userid):
-        pass
-
-    def del_user(self, userid):
-        pass
-
-    def add_item(self, itemid):
-        pass
-
-    def del_item(self, itemid):
-        pass
-
-class Attachs (BaseObject):
-    table = 'attachs'
-    select_fields = 'id,itemid,discid,creatid,name,filepath,url,closed,ctime,utime'
-
-class Discuss (BaseObject):
-    table = 'discuss'
-
-class Items (BaseObject):
-    table = 'items'
+    @with_validator([
+        F('id', T_INT, must=True),
+        F('name'),
+        F('info'),
+        F('orgid', T_INT),
+    ])
+    def modify(self):
+        return BaseObject.modify(self)
+ 
+    @with_validator([
+        F('id', T_INT),
+        F('name'),
+        F('orgid', T_INT),
+    ])
+    def query(self):
+        return BaseObject.query(self)
+ 
 
 class Product (BaseObject):
     table = 'product'
+    select_fields = 'id,orgid,title,content,creatid,pmid,tag1,tag2,tag3,' \
+        'FROM_UNIXTIME(ctime) as ctime,FROM_UNIXTIME(utime) as utime'
 
-class Profile (BaseObject):
-    table = 'profile'
+    @with_validator([
+        F('orgid', T_INT),
+        F('title', must=True),
+        F('content'),
+        F('pmid', T_INT),
+        F('tag1'),
+        F('tag2'),
+        F('tag3'),
+    ])
+    def create(self):
+        return BaseObject.create(self)
 
-class Tag (BaseObject):
-    table = 'tag'
+    @with_validator([
+        F('id', T_INT, must=True),
+        F('orgid', T_INT),
+        F('title', must=True),
+        F('content'),
+        F('pmid', T_INT),
+        F('tag1'),
+        F('tag2'),
+        F('tag3'),
+    ])
+    def modify(self):
+        return BaseObject.modify(self)
+ 
+    @with_validator([
+        F('id', T_INT),
+        F('orgid', T_INT),
+        F('title'),
+        F('pmid', T_INT),
+        F('tag1'),
+        F('tag2'),
+        F('tag3'),
+    ])
+    def query(self):
+        return BaseObject.query(self)
+ 
 
 
 class Index (BaseHandler):

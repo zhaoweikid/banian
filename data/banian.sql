@@ -28,7 +28,9 @@ CREATE TABLE role (
 	name varchar(128) not null unique COMMENT '角色名',
 	info varchar(128) not null unique COMMENT '角色描述',
 	orgid bigint(20) not null COMMENT '组织id',
-	perm varchar(256) COMMENT '权限'
+	perm varchar(256) COMMENT '权限',
+	ctime int(11) unsigned not null,
+	utime int(11) unsigned not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '用户角色';
 
 insert into role(id,name,orgid,info) values (100,'VP',0,'副总裁');
@@ -137,7 +139,11 @@ CREATE TABLE items (
 	point smallint not null default 0 COMMENT '任务完成需要点数',
 	rate smallint not null default 0 COMMENT '任务完成百分比，100为完成，10表示10%',
 	state smallint not null default 1 COMMENT '状态 1.创建 2.已确认 3.已开始 4.已暂停 5.已完成',
-	closed tinyint not null default 0 COMMENT '是否关闭',
+	enabled tinyint not null default 1 COMMENT '是否启用',
+	tstart int(11) unsigned  NOT NULL default 0 COMMENT '计划开始时间',
+	tend int(11) unsigned  NOT NULL default 0 COMMENT '计划结束时间',
+	tstart_real int(11) unsigned  NOT NULL default 0 COMMENT '真实开始时间',
+	tend_real int(11) unsigned  NOT NULL default 0 COMMENT '真实结束时间',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null COMMENT '更新时间',
 	key (planid),
@@ -151,7 +157,7 @@ CREATE TABLE discuss (
 	itemid bigint(20) not null,
 	content varchar(1024) not null COMMENT '内容',
 	creatid bigint(20) not null COMMENT '创建人',
-	closed tinyint not null default 0 COMMENT '是否删除',
+	enabled tinyint not null default 1 COMMENT '是否可用',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null COMMENT '更新时间',
 	key (itemid),
@@ -167,7 +173,7 @@ CREATE TABLE attachs (
 	name varchar(128) not null COMMENT '文件名',
 	filepath varchar(256) not null COMMENT '路径',
 	url varchar(256) not null COMMENT 'URL',
-	closed tinyint not null default 0 COMMENT '是否关闭',
+	enabled tinyint not null default 1 COMMENT '是否可用',
 	ctime int(11) unsigned not null COMMENT '创建时间',
 	utime int(11) unsigned not null COMMENT '更新时间',
 	key (itemid),
