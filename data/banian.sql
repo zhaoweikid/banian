@@ -29,6 +29,7 @@ CREATE TABLE role (
 	info varchar(128) not null unique COMMENT '角色描述',
 	orgid bigint(20) not null COMMENT '组织id',
 	perm varchar(256) COMMENT '权限',
+	enabled tinyint not null default 1 COMMENT '是否可用',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '用户角色';
@@ -56,6 +57,7 @@ CREATE TABLE team (
 	name varchar(128) not null unique COMMENT '团队名称',
 	parent bigint(20) not null default 0 COMMENT '父级团队',
 	tmtype tinyint not null default 1 COMMENT '团队类型 1.专业团队 2.项目团队',
+	enabled tinyint not null default 1 COMMENT '是否可用',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null
 	/*key `ownerid_idx` (ownerid)*/
@@ -65,6 +67,7 @@ CREATE TABLE team_member (
 	id bigint(20) not null primary key,
 	teamid bigint(20) not null COMMENT '团队id',
 	userid bigint(20) not null COMMENT '用户id',
+	enabled tinyint not null default 1 COMMENT '是否可用',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null,
 	key (userid)
@@ -75,8 +78,10 @@ CREATE TABLE tag (
 	orgid bigint(20) not null COMMENT '组织id',
 	name varchar(128) not null COMMENT '类别名称',
 	info varchar(256) not null COMMENT '描述',
+	enabled tinyint not null default 1 COMMENT '是否可用',
 	ctime int(11) unsigned not null,
-	utime int(11) unsigned not null
+	utime int(11) unsigned not null,
+	UNIQUE KEY `tag_u` (`name`, `orgid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '项目类别';	
 
 
@@ -90,6 +95,7 @@ CREATE TABLE product (
 	tag1 bigint(20) not null COMMENT '标签1',
 	tag2 bigint(20) not null COMMENT '标签2',
 	tag3 bigint(20) not null COMMENT '标签3',
+	enabled tinyint not null default 1 COMMENT '是否可用',
 	ctime int(11) unsigned not null,
 	utime int(11) unsigned not null,
 	key (creatid)
@@ -120,7 +126,7 @@ CREATE TABLE plan (
 	key (pmid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '迭代计划';
 
-CREATE TABLE items (
+CREATE TABLE item (
 	id bigint(20) not null primary key,
 	orgid bigint(20) not null COMMENT '组织id',
 	parentid bigint(20) not null default 0 COMMENT '父级任务，任务拆分时可能有多级',
@@ -165,7 +171,7 @@ CREATE TABLE discuss (
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '讨论';
 	
 
-CREATE TABLE attachs (
+CREATE TABLE attach (
 	id bigint(20) not null primary key,
 	itemid bigint(20) not null COMMENT '任务id',
 	discid bigint(20) not null default 0 COMMENT '评论id, 0表示不是评论',

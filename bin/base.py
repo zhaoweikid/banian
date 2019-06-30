@@ -15,8 +15,8 @@ log = logging.getLogger()
 
 def record_change(record):
     def _(row):
-        for k in ['id','userid','orgid']:
-            if k in row:
+        for k in row:
+            if k == 'id' or k.endswith('id'):
                 row[k] = str(row[k])
         if 'password' in row:
             row.pop('password')
@@ -58,12 +58,12 @@ class BaseObject (BaseHandler):
         log.debug('query: %s', xid)
         if xid:
             xid = int(xid)
-            self.query_one(xid)
+            return self.query_one(xid)
         else:
             if not self.ses.get('isadmin'):
                 self.fail(ERR_PERM)
                 return
-            self.query_all()
+            return self.query_all()
    
 
     def query_all(self):
@@ -89,7 +89,8 @@ class BaseObject (BaseHandler):
                 p =  conn.select_page(sql, pagecur, pagesize)
                 ret = {'page':p.page, 'pagesize':pagesize, 'pagenum':p.pages, 
                        'data':record_change(p.pagedata.data)}
-                self.succ(ret)
+                #self.succ(ret)
+                return ret
         except Exception as e:
             log.error(traceback.format_exc())
             self.fail(ERR, str(e))
@@ -102,7 +103,9 @@ class BaseObject (BaseHandler):
                 if not ret:
                     self.fail(ERR_NODATA)
                     return
-                self.succ(record_change(ret))
+                #self.succ(record_change(ret))
+
+                return record_change(ret)
         except Exception as e:
             log.error(traceback.format_exc())
             self.fail(ERR, str(e))
@@ -122,7 +125,8 @@ class BaseObject (BaseHandler):
                 conn.insert(self.table, self.data)
                 ret = conn.select_one(self.table, {'id':self.data['id']}, self.select_fields)
                 record_change(ret)
-                self.succ(ret)
+                #self.succ(ret)
+                return ret
         except Exception as e:
             log.error(traceback.format_exc())
             self.fail(ERR, str(e))
@@ -135,7 +139,8 @@ class BaseObject (BaseHandler):
             with get_connection(self.dbname) as conn:
                 conn.update(self.table, self.data, {'id':xid})
                 ret = conn.select(self.table, {'id':xid}, self.select_fields)
-                self.succ(record_change(ret))
+                #self.succ(record_change(ret))
+                return record_change(ret)
         except Exception as e:
             log.error(traceback.format_exc())
             self.fail(ERR, str(e))
@@ -150,7 +155,8 @@ class DeleteMixin:
                 return
             with get_connection(self.dbname) as conn:
                 conn.delete(self.table, {'id':int(xid)})
-                self.succ()
+                #self.succ()
+                return {}
         except Exception as e:
             log.error(traceback.format_exc())
             self.fail(ERR, str(e))

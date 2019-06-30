@@ -27,3 +27,8 @@ DATABASE = {
     },
 }
 
+# 数据目录
+DATA_DIR = os.path.join(HOME, 'data')
+
+
+

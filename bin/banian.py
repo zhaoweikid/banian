@@ -96,57 +96,6 @@ class Role (BaseObject):
  
 
 
-
-class Team (BaseObject):
-    table = 'team'
-    select_fields = 'id,ownerid,name,level,parent,tmtype,ctime,utime'
-    max_pagesize = 1000
-
-
-    @with_validator([
-        F('orgid', T_INT),
-        F('ownerid', T_INT),
-        F('name'),
-        F('parent', T_INT, default=0),
-        F('tmtype', T_INT, default=1),
-    ])
-    def create(self):
-        return BaseObject.create(self)
-
-    @with_validator([
-        F('id', T_INT, must=True),
-        F('ownerid', T_INT),
-        F('name'),
-        F('parent', T_INT, default=0),
-        F('tmtype', T_INT, default=1),
-    ])
-    def modify(self):
-        return BaseObject.modify(self)
- 
-    @with_validator([
-        F('id', T_INT, must=True),
-        F('ownerid', T_INT),
-        F('name'),
-        F('parent', T_INT),
-        F('tmtype', T_INT),
-    ])
-    def query(self):
-        return BaseObject.query(self)
- 
-    def add_member(self):
-        member = TeamMember()
-
-    def member(self, teamid):
-        try:
-            retdata = {'users':[]}
-            with get_connection(self.dbname) as conn:
-                ret = conn.select('team_member', where={'teamid':teamid}) 
-                if ret:
-                    retdata['users'] = [ row['userid'] for row in ret ]
-        except:
-            log.error(traceback.format_exc())
-            self.fail(ERR, str(e))
-
 class Tag (BaseObject):
     table = 'tag'
     select_fields = 'id,name,info,orgid,FROM_UNIXTIME(ctime) as ctime,FROM_UNIXTIME(utime) as utime'
@@ -197,7 +146,7 @@ class Product (BaseObject):
     @with_validator([
         F('id', T_INT, must=True),
         F('orgid', T_INT),
-        F('title', must=True),
+        F('title'),
         F('content'),
         F('pmid', T_INT),
         F('tag1'),

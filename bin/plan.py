@@ -16,9 +16,9 @@ log = logging.getLogger()
 
 class Plan (BaseObject):
     table = 'plan'
-    select_fields = 'id,orgid,creatid,tag1,tag2,tag3,pmid,', \
+    select_fields = 'id,orgid,creatid,tag1,tag2,tag3,pmid,' \
         'title,content,state,memo,tstart,tend,tstart_real,tend_real,' \
-        'point,rate,enable,' \
+        'point,rate,enabled,' \
         'FROM_UNIXTIME(ctime) as ctime,FROM_UNIXTIME(utime) as utime'
 
 
@@ -95,13 +95,13 @@ class Plan (BaseObject):
         pass
 
 
-class Items (BaseObject):
-    table = 'items'
+class Item (BaseObject):
+    table = 'item'
     select_fields = 'id,orgid,parentid,planid,topid,prdid,itemtype,' \
         'tag1,tag2,tag3,title,content,memo,creatid,ownerid,' \
         'point,rate,enabled,' \
-        'FROM_UNIXTIME(tstart) as tstart,FROM_UNIXTIME(tend) as tend' \
-        'FROM_UNIXTIME(tstart_real) as tstart_real,FROM_UNIXTIME(tend_real) as tend_real' \
+        'FROM_UNIXTIME(tstart) as tstart,FROM_UNIXTIME(tend) as tend,' \
+        'FROM_UNIXTIME(tstart_real) as tstart_real,FROM_UNIXTIME(tend_real) as tend_real,' \
         'FROM_UNIXTIME(ctime) as ctime,FROM_UNIXTIME(utime) as utime'
 
     @with_validator([
@@ -210,8 +210,8 @@ class Discuss (BaseObject):
 
 
 
-class Attachs (BaseObject):
-    table = 'attachs'
+class Attach (BaseObject):
+    table = 'attach'
     select_fields = 'id,itemid,discid,creatid,name,filepath,url,enabled,' \
         'FROM_UNIXTIME(ctime) as ctime,FROM_UNIXTIME(utime) as utime'
 
@@ -239,7 +239,7 @@ class Attachs (BaseObject):
         return BaseObject.modify(self)
 
     @with_validator([
-        F('id', T_INT, must=True),
+        F('id', T_INT),
         F('itemid', T_INT),
         F('discid', T_INT),
         F('name'),
@@ -251,5 +251,6 @@ class Attachs (BaseObject):
         return BaseObject.query(self)
 
 
-
-
+    def upload(self):
+        pass
+    
