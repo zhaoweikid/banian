@@ -5,3 +5,6 @@
 __pycache__
 *.swp
 node_modules
+*.so
+*.a
+tmp
