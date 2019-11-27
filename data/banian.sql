@@ -101,6 +101,20 @@ CREATE TABLE product (
 	key (creatid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '产品';	
 
+
+CREATE TABLE testcase (
+	id bigint(20) not null primary key,
+	prdid bigint(20) not null default 0 COMMENT '产品id',
+	tag1 bigint(20) not null COMMENT '标签1',
+	tag2 bigint(20) not null COMMENT '标签2',
+	tag3 bigint(20) not null COMMENT '标签3',
+	title varchar(256) not null COMMENT '名称',
+	content varchar(2048) not null COMMENT '描述',
+	enabled tinyint not null default 1 COMMENT '是否可用',
+	ctime int(11) unsigned not null,
+	utime int(11) unsigned not null
+)ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '测试用例';
+
 CREATE TABLE plan (
 	id bigint(20) not null primary key,
 	orgid bigint(20) not null COMMENT '组织id',
