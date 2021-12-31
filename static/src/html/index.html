@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<title>Banian</title>
+<meta name="description" content="" />
+<link rel="stylesheet" href="/src/css/element.css">
+<style>
+body {
+margin: 0;
+padding: 0;
+}
+.el-header {
+background-color: #fff;
+color: #333;
+line-height: 60px;
+}
+  
+.el-aside {
+background-color: #fefefe;
+}
+.el-menu {
+}
+.el-submenu {
+}
+.el-menu-item {
+height:35px;
+line-height:35px;
+}
+.baner {
+color:#cccccc;
+font-size:24px;
+float:left;
+width:80px;
+}
+.bmenu {
+color:#cccccc;
+}
+.datatable{
+}
+.mainbox{
+background-color:#fff;
+margin:0;
+padding:20px;
+}
+.mainhead{
+height:50px;
+}
+.mainpage{
+text-align:right;
+margin:10px 0 10px 0;
+}
+</style>
+
+</head>
+<body>
+
+<div id="app">
+
+<el-container>
+ <el-header style="text-align:right; font-size:12px; background-color:#343a40">
+ <div class="baner">Banian</div>
+ <div class="bmenu">
+
+<el-menu :default-active="activeIndex" background-color="#343a40" text-color="#fff" active-text-color="#ffd04b" mode="horizontal" @select="handleSelect" style="margin-left:160px;">
+  <el-menu-item index="1"><i class="el-icon-trophy"></i>产品</el-menu-item>
+  <el-menu-item index="2"><i class="el-icon-notebook-1"></i>项目</el-menu-item>
+  <el-menu-item index="3"><i class="el-icon-date"></i>迭代</el-menu-item>
+  <el-menu-item index="4"><i class="el-icon-user"></i>团队</el-menu-item>
+  <el-menu-item index="5"><i class="el-icon-collection-tag"></i>标签</el-menu-item>
+</el-menu>
+
+ </div>
+ </el-header>
+
+ <el-main style="overflow-y:hidden; margin:0; padding:0; height:100%">
+
+ <el-container>
+  <el-aside width="200px">
+   <div style="height:20px"></div>
+   <el-menu :default-openeds="['1']" text-color="#878787" active-text-color="#000" background-color="#fefefe">
+   <el-menu-item index="1"><i class="el-icon-menu"></i>我的总览</el-menu-item>
+   <el-menu-item index="2"><i class="el-icon-date"></i>我的迭代</el-menu-item>
+   <el-menu-item index="3"><i class="el-icon-s-custom"></i>我的团队</el-menu-item>
+   </el-menu>
+  </el-aside>
+
+  <el-container style="background-color:#eeeeee">
+   <el-main>
+
+<div style="margin: 0px 0 10px 0">
+<el-breadcrumb separator-class="el-icon-arrow-right">
+  <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+  <el-breadcrumb-item>活动管理</el-breadcrumb-item>
+  <el-breadcrumb-item>活动列表</el-breadcrumb-item>
+  <el-breadcrumb-item>活动详情</el-breadcrumb-item>
+</el-breadcrumb>
+</div>
+
+<div class="mainbox">
+  <div class="mainhead">
+
+
+<el-form :inline="true" :model="formInline" class="demo-form-inline">
+  <el-form-item label="">
+    <el-input v-model="formInline.user" placeholder="审批人" size="mini"></el-input>
+  </el-form-item>
+  <el-form-item label="">
+    <el-select v-model="formInline.region" placeholder="活动区域" size="mini">
+      <el-option label="区域一" value="shanghai"></el-option>
+      <el-option label="区域二" value="beijing"></el-option>
+    </el-select>
+  </el-form-item>
+  <el-form-item>
+    <el-button type="primary" @click="onSubmit" size="mini">查询</el-button>
+  </el-form-item>
+</el-form>
+
+  </div>
+
+  <div class="mainpage">
+  <el-pagination background layout="prev, pager, next" :total="1000"></el-pagination>
+  </div>
+
+  <el-table class="datatable" :data="tableData" ref="multipleTable" @selection-change="handleSelectionChange" border>
+    <el-table-column type="selection" width="55"></el-table-column>
+    <el-table-column prop="date" label="日期" width="140">
+    </el-table-column>
+    <el-table-column prop="name" label="姓名" width="120">
+    </el-table-column>
+    <el-table-column prop="address" label="地址">
+    </el-table-column>
+  </el-table>
+
+  <div class="mainpage">
+  <el-pagination background layout="prev, pager, next" :total="1000"></el-pagination>
+  </div>
+
+</div>
+
+   </el-main>
+  </el-container>
+
+ </el-container>
+
+ </el-main>
+ 
+ <el-footer style="background-color:#dddddd">
+ <center><div style="color:#999999; height:60px; line-height:60px;">Banian 1.0.0</div></center>
+ </el-footer>
+
+</el-container>
+
+</div>
+
+</body>
+
+<script src="/src/js/vue.js"></script>
+<script src="/src/js/element.js"></script>
+
+<script>
+
+var app = new Vue({
+	el: '#app',
+    data() {
+	  const items = [
+		{
+		date: '2016-05-02',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+		},
+		{
+		date: '2016-05-03',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+		},
+		{
+		date: '2016-05-04',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+		},
+		{
+		date: '2016-05-05',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+		}
+	  ];
+      return {
+        tableData: items,
+		formInline: {user:'', region:''},
+		multipleSelection: []
+      }
+    },
+	methods: {
+      toggleSelection(rows) {
+        if (rows) {
+          rows.forEach(row => {
+            this.$refs.multipleTable.toggleRowSelection(row);
+          });
+        } else {
+          this.$refs.multipleTable.clearSelection();
+        }
+      },
+      handleSelectionChange(val) {
+        this.multipleSelection = val;
+      }
+    }
+});
+</script>
+
+</html>
